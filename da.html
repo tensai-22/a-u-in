@@ -1,0 +1,493 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nota de Reconciliación</title>
+    <style>
+        /* Paleta en tonos verdes con gradientes y sombras */
+        :root {
+            --verde-fondo: #e0f7e9;
+            --verde-boton: #42b883;
+            --verde-oscuro: #074f39;
+            --verde-resalte: #31a66a;
+            --verde-gradiente-inicio: #b8f0d0;
+            --verde-gradiente-fin: #e0f7e9;
+            --sombra-tarjeta: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(160deg, var(--verde-gradiente-inicio), var(--verde-gradiente-fin));
+            color: var(--verde-oscuro);
+            overflow-x: hidden;
+        }
+
+        header,
+        main,
+        footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+
+        /* Botones con transición y sombra */
+        .btn {
+            padding: 10px 20px;
+            margin: 10px 0;
+            cursor: pointer;
+            border: none;
+            background-color: var(--verde-boton);
+            color: #fff;
+            border-radius: 4px;
+            box-shadow: var(--sombra-tarjeta);
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+            .btn:hover {
+                background-color: var(--verde-resalte);
+                transform: translateY(-2px);
+                animation: pulse 0.3s; /* Animación sutil */
+            }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Secciones con tarjetas */
+        section {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: var(--sombra-tarjeta);
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+
+        /* Todas estas secciones arrancan ocultas */
+        .timeline,
+        .images,
+        .interactive {
+            margin-top: 20px;
+            display: none; /* Oculto por defecto */
+        }
+
+        .timeline-item {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        /* Retiramos display:flex aquí para no sobreescribir
+           el display: none por defecto. El JS establecerá a "flex"
+           cuando se haga clic en el botón. */
+        .images {
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+            .images img {
+                max-width: 200px;
+                height: auto;
+                cursor: pointer;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                box-shadow: var(--sombra-tarjeta);
+                transition: transform 0.3s;
+            }
+
+                .images img:hover {
+                    transform: scale(1.05);
+                }
+
+        /* Modal para ampliar imágenes */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            border-radius: 8px;
+            box-shadow: var(--sombra-tarjeta);
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .fadeIn {
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        /* Contenedor para la animación de bubble teas y helados */
+        #fallingItems {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 9999;
+        }
+
+        .falling-item {
+            position: absolute;
+            top: -100px; /* Empieza un poco arriba de la ventana */
+            font-size: 2rem;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(120vh);
+            }
+        }
+
+        /* Sección del poema */
+        #poemSection {
+            background: linear-gradient(to right, #d3f7d8, #ffffff);
+            border-radius: 8px;
+            box-shadow: var(--sombra-tarjeta);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+            #poemSection h2 {
+                text-align: center;
+                margin-bottom: 15px;
+            }
+
+            #poemSection p {
+                white-space: pre-wrap;
+                font-style: italic;
+            }
+
+        /* Estilo para el contenedor de mensajes interactivos */
+        #interactiveContent {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #messageDisplay {
+            font-weight: bold;
+        }
+
+        #interactiveImage {
+            max-width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-shadow: var(--sombra-tarjeta);
+        }
+
+        /* Realza el fondo con un gradiente más dramático y una leve animación */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at top right, rgba(255,255,255,0.4), transparent 40%);
+            z-index: -1;
+            animation: floatBg 10s infinite alternate;
+        }
+
+        @keyframes floatBg {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(-5%, 5%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Contenedor de elementos cayendo (bubble teas y helados) -->
+    <div id="fallingItems"></div>
+
+    <header>
+        <h1>Nota de Reconciliación</h1>
+    </header>
+
+    <main>
+        <!-- Sección principal de información -->
+        <section id="info">
+            <p>
+                Hola Dayan, te hice esto porque no hay segundo que pase sin extrañarte y me duele mucho que estés molesta y no me hables.
+                Sé que las palabras se las lleva el viento, por eso esto más que palabras es un compromiso de nunca más mentir u ocultar algo.
+            </p>
+            <button class="btn" id="btnTimeline">Mostrar Cronología de Errores</button>
+            <!-- Por defecto oculto -->
+            <div id="timeline" class="timeline">
+                <div class="timeline-item">
+                    <strong>Día 1:</strong> Inicio del problema. Mentí en vez de afrontar una situación. Fue inmaduro, cojudo e incorrecto.
+                </div>
+                <div class="timeline-item">
+                    <strong>Día 2:</strong> Seguí con la mentira. Me arrepentí. Tu molestia estuvo justificada.
+                </div>
+                <div class="timeline-item">
+                    <strong>Día 3:</strong> Me dolió que me ignoraras. No quiero rendirme, al menos algo tengo que hacer para que me perdones.
+                </div>
+                <div class="timeline-item">
+                    <strong>Día Actual:</strong> Elaboración de esta página como pedido de perdón. Mi deseo es hacerte sonreír y prometerte un futuro mejor.
+                </div>
+            </div>
+        </section>
+
+        <!-- Sección de galería de imágenes independiente -->
+        <section id="gallery">
+            <button class="btn" id="btnImages">Mostrar Imágenes</button>
+            <!-- Por defecto oculto -->
+            <div id="imagesContainer" class="images">
+                <img src="C:\Users\jdavila.RENIECPERU\Desktop\external_code\ad\images\dayyo.jpg"
+                     alt="Imagen 1" data-full="C:\Users\jdavila.RENIECPERU\Desktop\external_code\ad\images\dayyo.jpg">
+                <img src="C:\Users\jdavila.RENIECPERU\Desktop\external_code\ad\images\dayyyo2.jpg"
+                     alt="Imagen 2" data-full="C:\Users\jdavila.RENIECPERU\Desktop\external_code\ad\images\dayyyo2.jpg">
+                <img src="C:\Users\jdavila.RENIECPERU\Desktop\external_code\ad\images\nu.jpg"
+                     alt="Imagen 3" data-full="C:\Users\jdavila.RENIECPERU\Desktop\external_code\ad\images\nu.jpg">
+                <img src="C:\Users\jdavila.RENIECPERU\Desktop\external_code\ad\images\nuyyo1.jpg"
+                     alt="Imagen 4" data-full="C:\Users\jdavila.RENIECPERU\Desktop\external_code\ad\images\nuyyo1.jpg">
+            </div>
+        </section>
+
+        <!-- Sección con mensajes e imágenes integradas de forma interactiva -->
+        <section id="interaction">
+            <button class="btn" id="btnInteractive">Mostrar Mensajes</button>
+            <!-- Por defecto oculto -->
+            <div id="interactiveContent" class="interactive">
+                <p id="messageDisplay">Pulsa el botón para examinar mis motivos.</p>
+                <img id="interactiveImage" src="" alt="Imagen Interactiva" />
+                <button class="btn" id="btnNext">Siguiente</button>
+            </div>
+        </section>
+
+        <!-- Sección del poema -->
+        <section id="poemSection">
+            <h2>Poema</h2>
+            <p>
+                Cada día que pasa te amo más,
+                tu estás por encima de los demás,
+                yo por ti todos los días me esforzaré,
+                para demostrarte mi amor nunca me rendiré
+
+                tú eres el centro de mi vida,
+                tu belleza y carácter siempre me inspirán,
+                se que muchas azañas lograrás,
+                y el mejor regalo es que conmigo las celebraras.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <p>Contacto: perdonameporfavor@añuñin.com</p>
+    </footer>
+
+    <!-- Modal para ampliar imágenes (galería) -->
+    <div id="modal" class="modal fadeIn">
+        <div class="modal-content">
+            <span id="closeModal" class="close">&times;</span>
+            <img id="modalImg" src="" alt="" style="width: 100%; height: auto; border-radius: 8px;">
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            /* --- Variables de elementos del DOM --- */
+            var btnTimeline = document.getElementById("btnTimeline");
+            var timeline = document.getElementById("timeline");
+            var btnImages = document.getElementById("btnImages");
+            var imagesContainer = document.getElementById("imagesContainer");
+            var btnInteractive = document.getElementById("btnInteractive");
+            var interactiveContent = document.getElementById("interactiveContent");
+            var btnNext = document.getElementById("btnNext");
+            var messageDisplay = document.getElementById("messageDisplay");
+            var interactiveImage = document.getElementById("interactiveImage");
+            var modal = document.getElementById("modal");
+            var modalImg = document.getElementById("modalImg");
+            var closeModal = document.getElementById("closeModal");
+            var images = imagesContainer.getElementsByTagName("img");
+            var fallingItemsContainer = document.getElementById("fallingItems");
+
+            /* --- Datos interactivos: mensajes e imágenes combinadas --- */
+            var interactiveData = [
+                {
+                    text: "Solicito tu cooperación para detener mi sensación de culpa.",
+                    image: "C:\\Users\\jdavila.RENIECPERU\\Desktop\\external_code\\ad\\images\\dayyo.jpg"
+                },
+                {
+                    text: "Sin tu perdón, carezco de tranquilidad.",
+                    image: "C:\\Users\\jdavila.RENIECPERU\\Desktop\\external_code\\ad\\images\\dayyyo2.jpg"
+                },
+                {
+                    text: "El error fue serio. El arrepentimiento es real.",
+                    image: "C:\\Users\\jdavila.RENIECPERU\\Desktop\\external_code\\ad\\images\\nu.jpg"
+                },
+                {
+                    text: "Valoro tu paciencia. Intentaré compensarte.",
+                    image: "C:\\Users\\jdavila.RENIECPERU\\Desktop\\external_code\\ad\\images\\nuyyo1.jpg"
+                }
+            ];
+            var currentIndex = 0;
+
+            /* --- Mostrar/Ocultar cronología --- */
+            btnTimeline.addEventListener("click", function () {
+                if (timeline.style.display === "none" || timeline.style.display === "") {
+                    timeline.style.display = "block";
+                    btnTimeline.textContent = "Ocultar Cronología de Errores";
+                } else {
+                    timeline.style.display = "none";
+                    btnTimeline.textContent = "Mostrar Cronología de Errores";
+                }
+            });
+
+            /* --- Mostrar/Ocultar galería de imágenes --- */
+            btnImages.addEventListener("click", function () {
+                if (imagesContainer.style.display === "none" || imagesContainer.style.display === "") {
+                    imagesContainer.style.display = "flex";
+                    btnImages.textContent = "HAZ CLICK EN LAS IMAGENES";
+                } else {
+                    imagesContainer.style.display = "none";
+                    btnImages.textContent = "Mostrar Imágenes";
+                }
+            });
+
+            /* --- Mostrar/Ocultar mensajes interactivos --- */
+            btnInteractive.addEventListener("click", function () {
+                if (interactiveContent.style.display === "none" || interactiveContent.style.display === "") {
+                    interactiveContent.style.display = "block";
+                    btnInteractive.textContent = "Ocultar Mensajes";
+                } else {
+                    interactiveContent.style.display = "none";
+                    btnInteractive.textContent = "Mostrar Mensajes";
+                }
+            });
+
+            /* --- Cambio de mensaje e imagen con el botón "Siguiente" --- */
+            btnNext.addEventListener("click", function () {
+                currentIndex = (currentIndex + 1) % interactiveData.length;
+                messageDisplay.textContent = interactiveData[currentIndex].text;
+                interactiveImage.src = interactiveData[currentIndex].image;
+            });
+
+            /* Inicializa el contenido interactivo con el primer elemento */
+            messageDisplay.textContent = interactiveData[0].text;
+            interactiveImage.src = interactiveData[0].image;
+
+            /* --- Modal para ampliar imágenes de la galería independiente + mensaje de perdón --- */
+            Array.prototype.forEach.call(images, function (img) {
+                img.addEventListener("click", function () {
+                    // Mensaje de perdón al hacer clic
+                    alert("Lo siento mucho Dayan, por favor perdóname.");
+
+                    var fullSrc = img.getAttribute("data-full") || img.src;
+                    modalImg.src = fullSrc;
+                    modal.style.display = "flex";
+                });
+            });
+
+            closeModal.addEventListener("click", function () {
+                modal.style.display = "none";
+            });
+
+            window.addEventListener("click", function (e) {
+                if (e.target === modal) {
+                    modal.style.display = "none";
+                }
+            });
+
+            /* --- Animación de bubble teas y helados cayendo --- */
+            var items = ["\u{1F9CB}", "\u{1F368}"]; // 🧋 y 🍨
+            var maxItems = 50; // Cantidad de objetos que caerán
+
+            function spawnFallingItem() {
+                var item = document.createElement("div");
+                item.classList.add("falling-item");
+                // Selecciona un emoji al azar
+                item.textContent = items[Math.floor(Math.random() * items.length)];
+
+                // Posición horizontal aleatoria
+                var randomX = Math.floor(Math.random() * window.innerWidth);
+                item.style.left = randomX + "px";
+
+                // Duración de la animación aleatoria entre 3 y 8 segundos
+                var duration = Math.random() * 5 + 3;
+                item.style.animationDuration = duration + "s";
+
+                // Agrega el elemento al contenedor
+                fallingItemsContainer.appendChild(item);
+
+                // Cuando acaba la animación, se elimina el elemento
+                item.addEventListener("animationend", function () {
+                    fallingItemsContainer.removeChild(item);
+                });
+            }
+
+            // Genera muchos objetos que caen en intervalos
+            var count = 0;
+            var spawnInterval = setInterval(function () {
+                spawnFallingItem();
+                count++;
+                if (count >= maxItems) {
+                    clearInterval(spawnInterval);
+                }
+            }, 300);
+        });
+    </script>
+</body>
+</html>
